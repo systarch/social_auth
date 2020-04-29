@@ -200,6 +200,15 @@ class UserManager extends SocialApiUserManager {
         ->getStorage('user')
         ->create($fields);
 
+      $errors = $new_user->validate();
+      if (!is_null($errors) && $errors->count() > 0) {
+        $this->loggerFactory
+          ->get($this->getPluginId())
+          ->warning('User failed to validate: @errors', ['@errors' => $errors]);
+        $this->messenger->addError($this->t('Aborted attempting to create user with invalid data. Please contact the administrator'));
+        return FALSE;
+      }
+
       $new_user->save();
 
       $this->loggerFactory
